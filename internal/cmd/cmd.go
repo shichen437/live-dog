@@ -84,7 +84,7 @@ func GetGtoken(ctx context.Context) (gfToken *gtoken.GfToken, err error) {
 		LoginBeforeFunc:  LoginFunc,
 		LogoutPath:       "post:/logout",
 		AuthPaths:        g.SliceStr{"/user", "/getInfo"}, // 这里是按照前缀拦截，拦截/user /user/list /user/add ...
-		AuthExcludePaths: g.SliceStr{},
+		AuthExcludePaths: g.SliceStr{"/file/manage/play"},
 		AuthAfterFunc:    AuthAfterFunc,
 		MultiLogin:       consts.MultiLogin,
 	}

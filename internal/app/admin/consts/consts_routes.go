@@ -22,4 +22,7 @@ var SpecialApiPath = map[string]bool{
 	//字典
 	"get/system/dict/type":              true,
 	"get/system/dict/type/optionselect": true,
+
+	// 播放
+	"get/file/manage/play": true,
 }

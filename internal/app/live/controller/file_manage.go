@@ -21,3 +21,8 @@ func (f *fileManageController) Delete(ctx context.Context, req *v1.DeleteFileInf
 	res, err = service.FileManage().Delete(ctx, req)
 	return
 }
+
+func (f *fileManageController) Play(ctx context.Context, req *v1.GetFilePlayReq) (res *v1.GetFilePlayRes, err error) {
+	res, err = service.FileManage().Play(ctx, req)
+	return
+}

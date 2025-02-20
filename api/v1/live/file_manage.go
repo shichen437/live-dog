@@ -24,3 +24,12 @@ type DeleteFileInfoReq struct {
 type DeleteFileInfoRes struct {
 	g.Meta `mime:"application/json"`
 }
+
+type GetFilePlayReq struct {
+	g.Meta `path:"/file/manage/play" method:"get" tags:"文件管理" summary:"视频播放"`
+	Path   string `p:"path" v:"required#请输入文件路径"`
+}
+
+type GetFilePlayRes struct {
+	g.Meta `mime:"video/*"`
+}
