@@ -100,8 +100,15 @@ func (f *sFileManage) Play(ctx context.Context, req *v1.GetFilePlayReq) (res *v1
 
 	contentType := "video/mp4"
 	ext := path.Ext(filepath)
-	if ext == ".flv" {
+	switch ext {
+	case ".flv":
 		contentType = "video/x-flv"
+	case ".aac":
+		contentType = "audio/aac"
+	case ".mp3":
+		contentType = "audio/mpeg"
+	case ".wav":
+		contentType = "audio/wav"
 	}
 
 	r := g.RequestFromCtx(ctx)
@@ -109,6 +116,7 @@ func (f *sFileManage) Play(ctx context.Context, req *v1.GetFilePlayReq) (res *v1
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", gconv.String(fileInfo.Size()))
 	w.Header().Set("Accept-Ranges", "bytes")
+	w.Header().Set("Cache-Control", "no-cache")
 
 	file, err := os.Open(filepath)
 	if err != nil {

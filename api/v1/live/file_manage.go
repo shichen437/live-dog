@@ -31,5 +31,5 @@ type GetFilePlayReq struct {
 }
 
 type GetFilePlayRes struct {
-	g.Meta `mime:"video/*"`
+	g.Meta `mime:"*/*"`
 }

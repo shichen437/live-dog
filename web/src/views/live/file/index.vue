@@ -178,7 +178,7 @@ function handleSelectionChange(selection) {
 
 /** 判断是否为视频文件 */
 function isVideoFile(filename) {
-    const videoExts = ['.mp4', '.flv'];
+    const videoExts = ['.mp4', '.flv', '.aac'];
     const lowerFilename = filename.toLowerCase();
     return videoExts.some(ext => lowerFilename.endsWith(ext));
 }

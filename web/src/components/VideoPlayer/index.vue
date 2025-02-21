@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, watch, computed, onBeforeUnmount, nextTick } from 'vue';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import '@videojs/http-streaming';
@@ -26,17 +26,20 @@ const dialogVisible = ref(props.modelValue);
 const videoPlayer = ref(null);
 let player = null;
 
+const isAudioFile = computed(() => {
+    const fileType = props.videoUrl?.toLowerCase() || '';
+    return fileType.endsWith('.aac') || fileType.endsWith('.mp3') || fileType.endsWith('.wav');
+});
+
 function initPlayer() {
     if (videoPlayer.value) {
         const options = {
             controls: true,
             fluid: true,
-            aspectRatio: '16:9',
+            preload: 'auto',
             controlBar: {
                 children: [
                     'playToggle',
-                    'rewindButton',
-                    'forwardButton',
                     'volumePanel',
                     'currentTimeDisplay',
                     'timeDivider',
@@ -45,23 +48,28 @@ function initPlayer() {
                     'playbackRateMenuButton',
                     'fullscreenToggle'
                 ]
-            },
-            techOrder: ['html5', 'flvjs'],
-            flvjs: {
-                mediaDataSource: {
-                    isLive: false,
-                    cors: true,
-                    withCredentials: false
-                }
             }
         };
 
-        if (props.videoUrl.toLowerCase().endsWith('.flv')) {
+        const fileType = props.videoUrl.toLowerCase();
+        if (fileType.endsWith('.flv')) {
+            options.techOrder = ['flvjs', 'html5'];
             options.sources = [{
                 src: props.videoUrl,
                 type: 'video/x-flv'
             }];
+        } else if (isAudioFile.value) {
+            options.techOrder = ['html5'];
+            options.sources = [{
+                src: props.videoUrl,
+                type: fileType.endsWith('.aac') ? 'audio/aac' : 
+                      fileType.endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav'
+            }];
+            options.height = '50px';
+            delete options.fluid;
+            delete options.controlBar.fullscreenToggle;
         } else {
+            options.techOrder = ['html5'];
             options.sources = [{
                 src: props.videoUrl,
                 type: 'video/mp4'
@@ -70,42 +78,33 @@ function initPlayer() {
 
         player = videojs(videoPlayer.value, options);
 
-        // 注册快进快退按钮
-        const Button = videojs.getComponent('Button');
-        
-        // 创建快退按钮
-        const RewindButton = videojs.extend(Button, {
-            constructor: function() {
-                Button.apply(this, arguments);
-                this.controlText("快退 5 秒");
-            },
-            handleClick: function() {
-                const time = this.player().currentTime();
-                this.player().currentTime(Math.max(0, time - 5));
-            },
-            buildCSSClass: function() {
-                return `vjs-rewind-control ${Button.prototype.buildCSSClass.call(this)}`;
-            }
-        });
-        
-        // 创建快进按钮
-        const ForwardButton = videojs.extend(Button, {
-            constructor: function() {
-                Button.apply(this, arguments);
-                this.controlText("快进 5 秒");
-            },
-            handleClick: function() {
-                const time = this.player().currentTime();
-                this.player().currentTime(Math.min(this.player().duration(), time + 5));
-            },
-            buildCSSClass: function() {
-                return `vjs-forward-control ${Button.prototype.buildCSSClass.call(this)}`;
-            }
-        });
+        if (isAudioFile.value) {
+            player.addClass('vjs-audio');
+        }
 
-        // 注册组件
-        videojs.registerComponent('RewindButton', RewindButton);
-        videojs.registerComponent('ForwardButton', ForwardButton);
+        // 添加快退按钮
+        const rewindButton = document.createElement('button');
+        rewindButton.className = 'vjs-control vjs-button vjs-rewind-control';
+        rewindButton.title = '快退 10 秒';
+        rewindButton.onclick = () => {
+            const time = player.currentTime();
+            player.currentTime(Math.max(0, time - 10));
+        };
+
+        // 添加快进按钮
+        const forwardButton = document.createElement('button');
+        forwardButton.className = 'vjs-control vjs-button vjs-forward-control';
+        forwardButton.title = '快进 5 秒';
+        forwardButton.onclick = () => {
+            const time = player.currentTime();
+            player.currentTime(Math.min(player.duration(), time + 5));
+        };
+
+        // 插入按钮到控制栏
+        const controlBar = player.getChild('ControlBar');
+        const playToggle = controlBar.getChild('PlayToggle');
+        controlBar.el().insertBefore(rewindButton, playToggle.el().nextSibling);
+        controlBar.el().insertBefore(forwardButton, rewindButton.nextSibling);
     }
 }
 
@@ -149,6 +148,7 @@ onBeforeUnmount(() => {
     width: 100%;
     margin: 0 auto;
     background: #000;
+    min-height: 50px;
 }
 
 :deep(.el-dialog__body) {
@@ -158,40 +158,87 @@ onBeforeUnmount(() => {
 :deep(.video-js) {
     width: 100%;
     height: 100%;
-    
-.vjs-rewind-control {
-        &::before {
-            content: "⏪";
+
+    &.vjs-audio {
+        min-height: 50px !important;
+        height: 50px !important;
+        background-color: #000;
+
+        .vjs-poster {
+            display: none;
+        }
+
+        .vjs-big-play-button {
+            display: none;
+        }
+
+        .vjs-control-bar {
+            display: flex;
+            position: relative;
+            height: 100%;
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .vjs-progress-control {
+            position: absolute;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 4px;
+            top: -4px;
+            transition: all 0.2s;
+
+            &:hover {
+                height: 8px;
+                top: -8px;
+            }
         }
     }
-    
-    .vjs-forward-control {
+
+    .vjs-rewind-control {
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+
         &::before {
-            content: "⏩";
+            font-size: 14px;
+            line-height: 2.2;
+            content: "10s";
+        }
+    }
+
+    .vjs-forward-control {
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+
+        &::before {
+            font-size: 14px;
+            line-height: 2.2;
+            content: "5s";
         }
     }
 
     .vjs-big-play-button {
         background-color: rgba(0, 0, 0, 0.45);
         border-color: #fff;
-        
+
         &:hover {
             background-color: #409eff;
         }
     }
-    
+
     .vjs-control-bar {
         background-color: rgba(0, 0, 0, 0.7);
     }
-    
+
     .vjs-slider-bar {
         background: #409eff;
     }
-    
+
     .vjs-play-progress {
         background-color: #409eff;
     }
-    
+
     .vjs-volume-level {
         background-color: #409eff;
     }
