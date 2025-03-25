@@ -34,7 +34,7 @@ func init() {
 type builder struct{}
 
 func (b *builder) Build(url *url.URL, liveId int) (lives.Live, error) {
-	return &Live{
+	return &Douyin{
 		Url:         url,
 		LiveId:      liveId,
 		Platform:    platform,
@@ -42,22 +42,26 @@ func (b *builder) Build(url *url.URL, liveId int) (lives.Live, error) {
 	}, nil
 }
 
-type Live struct {
+type Douyin struct {
 	Url         *url.URL
 	LiveId      int
 	Platform    string
 	RespCookies map[string]string
 }
 
-func (l *Live) GetLiveId() int {
+func (l *Douyin) GetLiveId() int {
 	return l.LiveId
 }
 
-func (l *Live) GetPlatform() string {
+func (l *Douyin) GetPlatform() string {
 	return l.Platform
 }
 
-func (l *Live) GetInfo() (info *lives.RoomInfo, err error) {
+func (l *Douyin) GetRefer() string {
+	return l.Url.String()
+}
+
+func (l *Douyin) GetInfo() (info *lives.RoomInfo, err error) {
 	info = &lives.RoomInfo{}
 	body, err := l.getRoomWebPageResp()
 	if err != nil {
@@ -158,7 +162,7 @@ func getStreamInfo(body string, streamId string) (infos []*lives.StreamUrlInfo, 
 	return
 }
 
-func (l *Live) getRoomWebPageResp() (body string, err error) {
+func (l *Douyin) getRoomWebPageResp() (body string, err error) {
 	c := g.Client()
 	cookieMap := l.assembleCookieMap()
 	c.SetCookieMap(cookieMap)
@@ -189,7 +193,7 @@ func (l *Live) getRoomWebPageResp() (body string, err error) {
 	}
 }
 
-func (l *Live) assembleCookieMap() map[string]string {
+func (l *Douyin) assembleCookieMap() map[string]string {
 	jar, _ := cookiejar.New(&cookiejar.Options{})
 	jar.SetCookies(l.Url, utils.GetCookieList(platform))
 	cookies := jar.Cookies(l.Url)

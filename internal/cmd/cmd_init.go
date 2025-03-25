@@ -6,6 +6,7 @@ import (
 	_ "github.com/shichen437/live-dog/internal/app/live/logic"
 	_ "github.com/shichen437/live-dog/internal/app/monitor/logic"
 
+	_ "github.com/shichen437/live-dog/internal/pkg/lives/bilibili"
 	_ "github.com/shichen437/live-dog/internal/pkg/lives/douyin"
 
 	_ "github.com/shichen437/live-dog/internal/pkg/message_push/email"

@@ -18,6 +18,7 @@ var (
 func init() {
 	addDictData(AssistLivePlatform, []SystemDictData{
 		{DictType: AssistLivePlatform, DictLabel: "抖音", DictValue: "douyin", DictSort: 1},
+		{DictType: AssistLivePlatform, DictLabel: "B站", DictValue: "bilibili", DictSort: 2},
 	})
 	addDictData(JobInvoke, []SystemDictData{
 		{DictType: JobInvoke, DictLabel: "空间预警", DictValue: "storageWarning", DictSort: 1},

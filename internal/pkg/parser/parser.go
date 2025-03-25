@@ -12,7 +12,7 @@ type Builder interface {
 }
 
 type Parser interface {
-	ParseLiveStream(ctx context.Context, streamInfo *lives.StreamUrlInfo, file string) error
+	ParseLiveStream(ctx context.Context, streamInfo *lives.StreamUrlInfo, file, refer string) error
 	Stop() error
 }
 

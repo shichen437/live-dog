@@ -121,7 +121,7 @@ func (p *Parser) Status() (map[string]string, error) {
 	return <-p.statusResp, nil
 }
 
-func (p *Parser) ParseLiveStream(ctx context.Context, streamInfo *lives.StreamUrlInfo, file string) (err error) {
+func (p *Parser) ParseLiveStream(ctx context.Context, streamInfo *lives.StreamUrlInfo, file, refer string) (err error) {
 	url := streamInfo.Url
 	ffmpegPath, err := utils.GetDefaultFFmpegPath()
 	if err != nil {
@@ -132,6 +132,10 @@ func (p *Parser) ParseLiveStream(ctx context.Context, streamInfo *lives.StreamUr
 	if !exists {
 		ffUserAgent = userAgent
 	}
+	referer, exists := headers["Referer"]
+	if !exists {
+		referer = refer
+	}
 	args := []string{
 		"-nostats",
 		"-progress", "-",
@@ -140,6 +144,7 @@ func (p *Parser) ParseLiveStream(ctx context.Context, streamInfo *lives.StreamUr
 		"-reconnect_streamed", "1",
 		"-reconnect_delay_max", "5",
 		"-user_agent", ffUserAgent,
+		"-referer", referer,
 		"-rw_timeout", p.timeoutInUs,
 		"-i", url.String(),
 		"-c", "copy",

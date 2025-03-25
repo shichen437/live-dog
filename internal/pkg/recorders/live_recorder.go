@@ -124,7 +124,7 @@ func (r *recorder) tryRecord(ctx context.Context) {
 	}
 	r.setAndCloseParser(p)
 	r.startTime = time.Now()
-	r.parser.ParseLiveStream(ctx, streamInfo, fileName)
+	r.parser.ParseLiveStream(ctx, streamInfo, fileName, r.Live.GetRefer())
 	removeEmptyFile(fileName)
 }
 

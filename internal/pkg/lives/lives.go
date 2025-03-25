@@ -15,6 +15,7 @@ type Live interface {
 	GetInfo() (*RoomInfo, error)
 	GetPlatform() string
 	GetLiveId() int
+	GetRefer() string
 }
 
 func Register(domain string, b Builder) {
