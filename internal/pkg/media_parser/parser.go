@@ -2,6 +2,7 @@ package media_parser
 
 import (
 	"context"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -42,22 +43,25 @@ func NewParser(url string) (MeidaParser, error) {
 	if err != nil {
 		return nil, gerror.New("not support this domain: " + url)
 	}
-	downloader, err := builder.Build(reqUrl)
+	parser, err := builder.Build(reqUrl)
 	if err != nil {
 		return nil, gerror.New("failed to build downloader for domain: " + url)
 	}
-	return downloader, nil
+	return parser, nil
 }
 
 func parseSourceUrl(shareURL string) (platform, reqUrl string) {
-	url := utils.FindFirstMatch(shareURL, BaseReg)
-	if shareURL == "" || url == "" {
+	reqUrl = utils.FindFirstMatch(shareURL, BaseReg)
+	if shareURL == "" || reqUrl == "" {
 		return "", ""
 	}
-
+	urlParse, err := url.Parse(reqUrl)
+	if err != nil {
+		return "", ""
+	}
 	for _, platform := range platformSet {
-		if strings.Contains(url, platform) {
-			return platform, url
+		if strings.Contains(urlParse.Host, platform) {
+			return platform, reqUrl
 		}
 	}
 	return "", ""

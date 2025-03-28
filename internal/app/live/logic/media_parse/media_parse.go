@@ -52,6 +52,7 @@ func (s *sMediaParse) Parse(ctx context.Context, req *v1.PostMediaParseReq) (res
 	if info.Type == "video" {
 		mediaInfo.VideoUrl = info.VideoUrl
 		mediaInfo.VideoCoverUrl = info.VideoCoverUrl
+		mediaInfo.VideoData = info.VideoData
 		dao.MediaParse.Ctx(ctx).Insert(mediaInfo)
 	}
 	if info.Type == "note" {

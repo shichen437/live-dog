@@ -19,6 +19,7 @@ type MediaParse struct {
 	Type           string      `json:"type"           orm:"type"             description:"媒体类型"`
 	VideoUrl       string      `json:"videoUrl"       orm:"video_url"        description:"视频 url"`
 	VideoCoverUrl  string      `json:"videoCoverUrl"  orm:"video_cover_url"  description:"视频封面 url"`
+	VideoData      string      `json:"videoData"      orm:"video_data"       description:"视频数据"`
 	MusicUrl       string      `json:"musicUrl"       orm:"music_url"        description:"音乐 url"`
 	MusicCoverUrl  string      `json:"musicCoverUrl"  orm:"music_cover_url"  description:"音乐封面 url"`
 	ImagesUrl      string      `json:"imagesUrl"      orm:"images_url"       description:"图集 url"`

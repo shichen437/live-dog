@@ -40,12 +40,15 @@
             </el-table-column>
             <el-table-column label="作品封面" align="center" width="240">
                 <template #default="scope">
-                    <img v-if="scope.row.type === 'video'" :src="scope.row.videoCoverUrl" alt="视频封面"
-                        style="width: 100px; height: auto;" />
-                    <img v-if="scope.row.type === 'music'" :src="scope.row.musicCoverUrl" alt="音乐封面"
-                        style="width: 100px; height: auto;" />
-                    <img v-if="scope.row.type === 'note'" :src="scope.row.imagesCoverUrl" alt="图集封面"
-                        style="width: 100px; height: auto;" />
+                    <img v-if="scope.row.type === 'video'"
+                        :referrerpolicy="scope.row.platform === 'bilibili' ? 'no-referrer' : 'origin'"
+                        :src="scope.row.videoCoverUrl" alt="视频封面" style="width: 100px; height: auto;" />
+                    <img v-if="scope.row.type === 'music'"
+                        :referrerpolicy="scope.row.platform === 'bilibili' ? 'no-referrer' : 'origin'"
+                        :src="scope.row.musicCoverUrl" alt="音乐封面" style="width: 100px; height: auto;" />
+                    <img v-if="scope.row.type === 'note'"
+                        :referrerpolicy="scope.row.platform === 'bilibili' ? 'no-referrer' : 'origin'"
+                        :src="scope.row.imagesCoverUrl" alt="图集封面" style="width: 100px; height: auto;" />
                 </template>
             </el-table-column>
             <el-table-column label="作者" align="center" prop="author" :show-overflow-tooltip="true" width="140" />
@@ -107,16 +110,32 @@
                 <el-descriptions-item label="解析时间" :span="1">{{ detailData.createTime }}</el-descriptions-item>
                 <el-descriptions-item label="作品描述" :span="2">{{ detailData.desc }}</el-descriptions-item>
                 <el-descriptions-item label="视频封面" :span="2" v-if="detailData.type === 'video'">
-                    <img :src="detailData.videoCoverUrl" alt="视频封面" style="width: 100px; height: auto;" />
+                    <img :src="detailData.videoCoverUrl"
+                        :referrerpolicy="detailData.platform === 'bilibili' ? 'no-referrer' : 'origin'" alt="视频封面"
+                        style="width: 100px; height: auto;" />
                 </el-descriptions-item>
                 <el-descriptions-item label="音乐封面" :span="2" v-if="detailData.type === 'music'">
-                    <img :src="detailData.musicCoverUrl" alt="音乐封面" style="width: 100px; height: auto;" />
+                    <img :src="detailData.musicCoverUrl"
+                        :referrerpolicy="detailData.platform === 'bilibili' ? 'no-referrer' : 'origin'" alt="音乐封面"
+                        style="width: 100px; height: auto;" />
                 </el-descriptions-item>
                 <el-descriptions-item label="图集封面" :span="2" v-if="detailData.type === 'note'">
-                    <img :src="detailData.imagesCoverUrl" alt="图集封面" style="width: 100px; height: auto;" />
+                    <img :src="detailData.imagesCoverUrl"
+                        :referrerpolicy="detailData.platform === 'bilibili' ? 'no-referrer' : 'origin'" alt="图集封面"
+                        style="width: 100px; height: auto;" />
                 </el-descriptions-item>
-                <el-descriptions-item label="视频链接" :span="2" v-if="detailData.type === 'video'">
+                <el-descriptions-item label="视频链接" :span="2"
+                    v-if="detailData.type === 'video' && detailData.videoUrl != ''">
                     <a :href="detailData.videoUrl" target="_blank">{{ detailData.videoUrl }}</a>
+                </el-descriptions-item>
+                <el-descriptions-item label="视频数据" :span="2"
+                    v-if="detailData.type === 'video' && detailData.videoData != ''">
+                    <el-space wrap>
+                        <el-tag v-for="(video, index) in JSON.parse(detailData.videoData).videos" :key="index"
+                            type="info" effect="plain" round>
+                            {{ video.quality_desc }}
+                        </el-tag>
+                    </el-space>
                 </el-descriptions-item>
                 <el-descriptions-item label="音乐链接" :span="2" v-if="detailData.type === 'music'">
                     <a :href="detailData.musicUrl" target="_blank">{{ detailData.musicUrl }}</a>

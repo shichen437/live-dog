@@ -1,7 +1,7 @@
 package media_parser
 
 var (
-	platformSet = []string{"douyin"}
+	platformSet = []string{"douyin", "bilibili"}
 	BaseReg     = `http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+`
 )
 
@@ -18,6 +18,7 @@ type MediaInfo struct {
 	MusicCoverUrl  string `json:"music_cover_url"`
 	ImagesUrl      string `json:"images_url"`
 	ImagesCoverUrl string `json:"images_cover_url"`
+	VideoData      string `json:"video_data"`
 }
 
 type DownloadResult struct {

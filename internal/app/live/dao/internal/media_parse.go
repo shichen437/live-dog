@@ -29,6 +29,7 @@ type MediaParseColumns struct {
 	Type           string // 媒体类型
 	VideoUrl       string // 视频 url
 	VideoCoverUrl  string // 视频封面 url
+	VideoData      string // 视频数据
 	MusicUrl       string // 音乐 url
 	MusicCoverUrl  string // 音乐封面 url
 	ImagesUrl      string // 图集 url
@@ -47,6 +48,7 @@ var mediaParseColumns = MediaParseColumns{
 	Type:           "type",
 	VideoUrl:       "video_url",
 	VideoCoverUrl:  "video_cover_url",
+	VideoData:      "video_data",
 	MusicUrl:       "music_url",
 	MusicCoverUrl:  "music_cover_url",
 	ImagesUrl:      "images_url",

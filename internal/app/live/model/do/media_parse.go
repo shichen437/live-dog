@@ -21,6 +21,7 @@ type MediaParse struct {
 	Type           interface{} // 媒体类型
 	VideoUrl       interface{} // 视频 url
 	VideoCoverUrl  interface{} // 视频封面 url
+	VideoData      interface{} // 视频数据
 	MusicUrl       interface{} // 音乐 url
 	MusicCoverUrl  interface{} // 音乐封面 url
 	ImagesUrl      interface{} // 图集 url

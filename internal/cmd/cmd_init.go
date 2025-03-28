@@ -12,5 +12,6 @@ import (
 	_ "github.com/shichen437/live-dog/internal/pkg/message_push/email"
 	_ "github.com/shichen437/live-dog/internal/pkg/message_push/gotify"
 
+	_ "github.com/shichen437/live-dog/internal/pkg/media_parser/bilibili"
 	_ "github.com/shichen437/live-dog/internal/pkg/media_parser/douyin"
 )
