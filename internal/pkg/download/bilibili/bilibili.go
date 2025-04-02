@@ -42,24 +42,31 @@ func (d *BilibiliDownloader) downloadVideo(ctx context.Context, taskID string) (
 		g.Log().Error(ctx, err)
 		return nil, gerror.New("获取输出路径失败")
 	}
+	pm := download.GetProgressManager()
+	pm.CreateTask(taskID, d.downloadParams.Title, outputPath)
 	go func() {
 		downloadCtx := context.Background()
 		if err := os.MkdirAll(outputPath, os.ModePerm); err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
 		outputTempPath, err := download.GetOutputPath(true, d.downloadParams)
 		if err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
 		if err := os.MkdirAll(outputTempPath, os.ModePerm); err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
+		pm.UpdateProgress(taskID, download.DownloadStatusRunning)
 		tempVideo, err := download.GetOutputFilename("m4s", utils.GenRandomString(6, randomStr), outputTempPath, d.downloadParams)
 		if err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
 		_, err = utils.GetDownloadFile(downloadCtx, &utils.DownloadFileRequest{
@@ -70,11 +77,13 @@ func (d *BilibiliDownloader) downloadVideo(ctx context.Context, taskID string) (
 		})
 		if err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
 		tempAudio, err := download.GetOutputFilename("m4s", utils.GenRandomString(6, randomStr), outputTempPath, d.downloadParams)
 		if err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
 		defer func() {
@@ -89,11 +98,12 @@ func (d *BilibiliDownloader) downloadVideo(ctx context.Context, taskID string) (
 		})
 		if err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
 		// 合并
 		filename, err := download.GetOutputFilename("mp4", utils.GenRandomString(6, randomStr), outputPath, d.downloadParams)
-		utils.NewFFmpegBuilder().
+		_, err = utils.NewFFmpegBuilder().
 			Input(tempVideo).
 			Input(tempAudio).
 			CopyCodec().
@@ -101,6 +111,12 @@ func (d *BilibiliDownloader) downloadVideo(ctx context.Context, taskID string) (
 			AddDefaultThreads().
 			Output(filename).
 			Execute(downloadCtx)
+		if err != nil {
+			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
+			return
+		}
+		pm.SetCompleted(taskID)
 	}()
 	return &download.DownloadResult{
 		TaskID:     taskID,

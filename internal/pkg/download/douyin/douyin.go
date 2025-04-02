@@ -43,14 +43,18 @@ func (d *DouyinDownloader) DownMediaFile(ctx context.Context) (*download.Downloa
 
 func (d *DouyinDownloader) downloadVideo(ctx context.Context, taskID string) (*download.DownloadResult, error) {
 	outputPath, filename, err := download.GetOutputInfo("mp4", utils.GenRandomString(6, randomStr), false, d.downloadParams)
+	pm := download.GetProgressManager()
+	pm.CreateTask(taskID, d.downloadParams.Title, filename)
 	if err != nil {
 		g.Log().Error(ctx, err)
+		pm.SetError(taskID, err.Error())
 		return nil, gerror.New("获取输出路径失败")
 	}
 	go func() {
 		downloadCtx := context.Background()
 		if err := os.MkdirAll(outputPath, os.ModePerm); err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
 		_, err := utils.GetDownloadFile(downloadCtx, &utils.DownloadFileRequest{
@@ -59,8 +63,10 @@ func (d *DouyinDownloader) downloadVideo(ctx context.Context, taskID string) (*d
 		})
 		if err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
+		pm.SetCompleted(taskID)
 	}()
 	return &download.DownloadResult{
 		TaskID:     taskID,
@@ -75,12 +81,17 @@ func (d *DouyinDownloader) downloadNote(ctx context.Context, taskID string) (*do
 		g.Log().Error(ctx, err)
 		return nil, gerror.New("获取输出路径失败")
 	}
+	pm := download.GetProgressManager()
+	pm.CreateTask(taskID, d.downloadParams.Title, outputPath)
 	go func() {
 		downloadCtx := context.Background()
 		if err := os.MkdirAll(outputPath, os.ModePerm); err != nil {
 			g.Log().Error(downloadCtx, err)
+			pm.SetError(taskID, err.Error())
 			return
 		}
+		var flag = 0
+		pm.UpdateProgress(taskID, download.DownloadStatusRunning)
 		for idx, imageUrl := range d.downloadParams.ImageUrls {
 			var rse string
 			if idx == 0 {
@@ -92,6 +103,7 @@ func (d *DouyinDownloader) downloadNote(ctx context.Context, taskID string) (*do
 			g.Log().Info(downloadCtx, filename)
 			if err != nil {
 				g.Log().Error(downloadCtx, err)
+				continue
 			}
 
 			_, err = utils.GetDownloadFile(downloadCtx, &utils.DownloadFileRequest{
@@ -102,7 +114,16 @@ func (d *DouyinDownloader) downloadNote(ctx context.Context, taskID string) (*do
 				g.Log().Error(downloadCtx, err)
 				continue
 			}
+			flag++
 		}
+		if flag == len(d.downloadParams.ImageUrls) {
+			pm.SetCompleted(taskID)
+		} else if flag == 0 {
+			pm.SetError(taskID, "下载失败")
+		} else {
+			pm.SetPartCompleted(taskID, "部分请求未成功，请检查日志")
+		}
+
 	}()
 	return &download.DownloadResult{
 		TaskID:     taskID,

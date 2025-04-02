@@ -1,5 +1,7 @@
 package download
 
+import "github.com/gogf/gf/v2/os/gtime"
+
 type DownloadParams struct {
 	Platform     string   `json:"platform"`     // 平台
 	Title        string   `json:"title"`        // 视频标题
@@ -24,22 +26,22 @@ type DownloadResult struct {
 type DownloadStatus string
 
 const (
-	DownloadStatusPending   DownloadStatus = "pending"
-	DownloadStatusRunning   DownloadStatus = "running"
-	DownloadStatusCompleted DownloadStatus = "completed"
-	DownloadStatusError     DownloadStatus = "error"
+	DownloadStatusPending     DownloadStatus = "pending"     // 待下载
+	DownloadStatusRunning     DownloadStatus = "running"     // 下载中
+	DownloadStatusConverting  DownloadStatus = "converting"  // 转换中
+	DownloadStatusCompleted   DownloadStatus = "completed"   // 已完成
+	DownloadStatusPartSucceed DownloadStatus = "partSucceed" // 部分成功
+	DownloadStatusError       DownloadStatus = "error"       // 下载失败
 )
 
 type DownloadProgress struct {
-	TaskID       string         `json:"taskID"`
-	Status       DownloadStatus `json:"status"`
-	Progress     float64        `json:"progress"`
-	Speed        string         `json:"speed"`
-	TotalSize    int64          `json:"totalSize"`
-	Downloaded   int64          `json:"downloaded"`
-	EstimatedETA string         `json:"estimatedETA"`
-	Filename     string         `json:"filename"`
-	Error        string         `json:"error,omitempty"`
-	StartTime    int64          `json:"startTime"`
-	UpdateTime   int64          `json:"updateTime"`
+	ErrorMsg   string         `json:"error"`
+	OutputPath string         `json:"outputPath"`
+	Progress   float64        `json:"progress"`
+	StartTime  *gtime.Time    `json:"startTime"`
+	Status     DownloadStatus `json:"status"`
+	TaskID     string         `json:"taskID"`
+	Title      string         `json:"title"`
+	TotalSize  int64          `json:"totalSize"`
+	UpdateTime *gtime.Time    `json:"updateTime"`
 }
