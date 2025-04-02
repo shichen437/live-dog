@@ -17,6 +17,7 @@ type (
 		List(ctx context.Context, req *v1.GetMediaParseListReq) (res *v1.GetMediaParseListRes, err error)
 		Get(ctx context.Context, req *v1.GetMediaParseReq) (res *v1.GetMediaParseRes, err error)
 		Delete(ctx context.Context, req *v1.DeleteMediaParseReq) (res *v1.DeleteMediaParseRes, err error)
+		Download(ctx context.Context, req *v1.GetDownloadMediaReq) (res *v1.GetDownloadMediaRes, err error)
 	}
 )
 

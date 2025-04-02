@@ -22,6 +22,7 @@ type MediaParseDao struct {
 type MediaParseColumns struct {
 	Id             string // 媒体解析主键 ID
 	Platform       string // 平台
+	Referer        string // 来源
 	Author         string // 作者名称
 	AuthorUid      string // 作者 UID
 	Desc           string // 媒体描述
@@ -41,6 +42,7 @@ type MediaParseColumns struct {
 var mediaParseColumns = MediaParseColumns{
 	Id:             "id",
 	Platform:       "platform",
+	Referer:        "referer",
 	Author:         "author",
 	AuthorUid:      "author_uid",
 	Desc:           "desc",

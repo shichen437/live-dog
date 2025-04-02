@@ -28,6 +28,14 @@ func GetOutputPath() string {
 	return Output
 }
 
+func GetDownloadPath() string {
+	return Output + "/download"
+}
+
+func GetTempDownloadPath() string {
+	return "./resource/temp/download"
+}
+
 func GetFileUploadPath() string {
 	return Upload
 }

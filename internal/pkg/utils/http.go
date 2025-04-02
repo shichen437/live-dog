@@ -4,11 +4,15 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
+	"net/url"
 	"strings"
 
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gctx"
+	"github.com/gogf/gf/v2/os/gfile"
 )
 
 // GetClientIp 获取客户端IP
@@ -56,4 +60,56 @@ func GetCookieList(platform string) []*http.Cookie {
 		})
 	}
 	return cookiesList
+}
+
+func GetCookieMap(platform, refer string) map[string]string {
+	jar, _ := cookiejar.New(&cookiejar.Options{})
+	url, _ := url.Parse(refer)
+	jar.SetCookies(url, GetCookieList(platform))
+	cookies := jar.Cookies(url)
+	cookieMap := make(map[string]string)
+	for _, c := range cookies {
+		cookieMap[c.Name] = c.Value
+	}
+	return cookieMap
+}
+
+type DownloadFileRequest struct {
+	CookieMap map[string]string
+	Filename  string
+	Refer     string
+	Url       string
+	UserAgent string
+}
+
+func GetDownloadFile(ctx context.Context, req *DownloadFileRequest) (int64, error) {
+	client := g.Client()
+	if req.UserAgent != "" {
+		client.SetAgent(req.UserAgent)
+	} else {
+		client.SetAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36")
+	}
+	if req.CookieMap != nil {
+		client.SetCookieMap(req.CookieMap)
+	}
+	if req.Refer != "" {
+		client.SetHeader("Referer", req.Refer)
+	}
+	resp, err := client.Get(ctx, req.Url)
+	defer resp.Close()
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return 0, gerror.New("HTTP请求失败")
+	}
+	if resp.StatusCode != 200 {
+		g.Log().Error(ctx, "HTTP请求失败，状态码:", resp.StatusCode)
+		return 0, gerror.New("HTTP请求失败")
+	}
+	if resp.ContentLength == 0 {
+		return 0, gerror.New("文件大小为0")
+	}
+	if req.Filename != "" {
+		gfile.PutBytes(req.Filename, resp.ReadAll())
+	}
+	return resp.ContentLength, nil
 }

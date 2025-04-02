@@ -14,6 +14,7 @@ type MediaParse struct {
 	g.Meta         `orm:"table:media_parse, do:true"`
 	Id             interface{} // 媒体解析主键 ID
 	Platform       interface{} // 平台
+	Referer        interface{} // 来源
 	Author         interface{} // 作者名称
 	AuthorUid      interface{} // 作者 UID
 	Desc           interface{} // 媒体描述

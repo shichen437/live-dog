@@ -3,8 +3,6 @@ package bilibili
 import (
 	"context"
 	"encoding/json"
-	"net/http/cookiejar"
-	"net/url"
 	"sort"
 	"strings"
 
@@ -53,6 +51,7 @@ func (b *BilibiliParser) ParseURL(ctx context.Context) (*media_parser.MediaInfo,
 	}
 	return &media_parser.MediaInfo{
 		Platform:      platform,
+		Refer:         b.Url,
 		VideoID:       bvid,
 		Author:        detail.Author,
 		AuthorUid:     detail.AuthorUid,
@@ -66,7 +65,7 @@ func (b *BilibiliParser) ParseURL(ctx context.Context) (*media_parser.MediaInfo,
 func (b *BilibiliParser) getPlayUrlInfo(ctx context.Context, detail *BilibiliVideoDetail, bvid string) (*BilibiliMediaData, error) {
 	c := g.Client()
 	c.SetHeaderMap(bilibiliHeaders)
-	c.SetCookieMap(b.assembleCookieMap())
+	c.SetCookieMap(utils.GetCookieMap(platform, b.Url))
 	payloadMap := g.MapStrStr{
 		"avid":  detail.Aid,
 		"bvid":  bvid,
@@ -142,7 +141,7 @@ func (b *BilibiliParser) getPlayUrlInfo(ctx context.Context, detail *BilibiliVid
 func (b *BilibiliParser) getAidAndCid(ctx context.Context, bvid string) *BilibiliVideoDetail {
 	c := g.Client()
 	c.SetHeaderMap(bilibiliHeaders)
-	c.SetCookieMap(b.assembleCookieMap())
+	c.SetCookieMap(utils.GetCookieMap(platform, b.Url))
 	payload := "bvid=" + bvid
 	resp, err := c.Get(ctx, videoDetailPath+payload)
 	if err != nil || resp.StatusCode != 200 {
@@ -170,18 +169,6 @@ func (b *BilibiliParser) getAidAndCid(ctx context.Context, bvid string) *Bilibil
 		Desc:       jsonData.Get("data.title").String(),
 		VideoCover: jsonData.Get("data.pic").String(),
 	}
-}
-
-func (d *BilibiliParser) assembleCookieMap() map[string]string {
-	jar, _ := cookiejar.New(&cookiejar.Options{})
-	url, _ := url.Parse(d.Url)
-	jar.SetCookies(url, utils.GetCookieList(platform))
-	cookies := jar.Cookies(url)
-	cookieMap := make(map[string]string)
-	for _, c := range cookies {
-		cookieMap[c.Name] = c.Value
-	}
-	return cookieMap
 }
 
 func getQualityDesc(v gjson.Result) string {

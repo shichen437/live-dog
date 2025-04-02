@@ -31,3 +31,8 @@ func (c *mediaParseController) Delete(ctx context.Context, req *v1.DeleteMediaPa
 	res, err = service.MediaParse().Delete(ctx, req)
 	return
 }
+
+func (c *mediaParseController) Download(ctx context.Context, req *v1.GetDownloadMediaReq) (res *v1.GetDownloadMediaRes, err error) {
+	res, err = service.MediaParse().Download(ctx, req)
+	return
+}

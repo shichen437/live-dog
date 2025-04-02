@@ -3,7 +3,7 @@ package media_parser_test
 import (
 	"testing"
 
-	"github.com/gogf/gf/os/gctx"
+	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/shichen437/live-dog/internal/pkg/media_parser"
 	_ "github.com/shichen437/live-dog/internal/pkg/media_parser/douyin"
 )

@@ -12,6 +12,7 @@ import (
 type MediaParse struct {
 	Id             int64       `json:"id"             orm:"id"               description:"媒体解析主键 ID"`
 	Platform       string      `json:"platform"       orm:"platform"         description:"平台"`
+	Referer        string      `json:"referer"        orm:"referer"          description:"来源"`
 	Author         string      `json:"author"         orm:"author"           description:"作者名称"`
 	AuthorUid      string      `json:"authorUid"      orm:"author_uid"       description:"作者 UID"`
 	Desc           string      `json:"desc"           orm:"desc"             description:"媒体描述"`

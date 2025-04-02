@@ -60,6 +60,10 @@
                         <el-button link type="primary" icon="View" @click="handleDetail(scope.row)"
                             v-hasPermi="['live:parse:get']"></el-button>
                     </el-tooltip>
+                    <el-tooltip content="下载" placement="top">
+                        <el-button link type="primary" icon="Download" @click="handleDownload(scope.row)"
+                            v-hasPermi="['live:parse:download']"></el-button>
+                    </el-tooltip>
                     <el-tooltip content="删除" placement="top">
                         <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                             v-hasPermi="['live:parse:delete']"></el-button>
@@ -150,6 +154,22 @@
                 </el-descriptions-item>
             </el-descriptions>
         </el-dialog>
+
+        <el-dialog v-model="qualityDialogVisible" title="选择清晰度" width="30%" :close-on-click-modal="false">
+            <div>
+                <el-select v-model="selectedQuality" style="width: 100%">
+                    <el-option v-for="item in qualityOptions" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </div>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="qualityDialogVisible = false">取消</el-button>
+                    <el-button type="primary" :loading="qualityDialogLoading"
+                        @click="confirmQualityDownload">确定</el-button>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -159,6 +179,7 @@ import {
     getParseInfo,
     parseUrl,
     delParseInfo,
+    downloadMedia,
 } from "@/api/live/parse";
 
 const { proxy } = getCurrentInstance();
@@ -174,6 +195,12 @@ const multiple = ref(true);
 const total = ref(0);
 const detailDialog = ref(false);
 const detailData = ref(null);
+const selectedQuality = ref('');
+
+const qualityDialogVisible = ref(false);
+const qualityDialogLoading = ref(false);
+const qualityOptions = ref([]);
+const currentRow = ref(null); // Add this to store the current row being downloaded
 
 const data = reactive({
     form: {},
@@ -265,6 +292,53 @@ function handleSelectionChange(selection) {
     ids.value = selection.map((item) => item.roleId);
     single.value = selection.length != 1;
     multiple.value = !selection.length;
+}
+
+function handleDownload(row) {
+    proxy.$modal.confirm('是否确认下载该视频?').then(() => {
+        // 对于B站视频，需要选择清晰度
+        if (row.platform === 'bilibili' && row.videoData) {
+            const videos = JSON.parse(row.videoData).videos || [];
+            if (videos.length > 0) {
+                // 设置清晰度选项
+                qualityOptions.value = videos.map(v => ({
+                    label: v.quality_desc,
+                    value: v.quality_desc
+                }));
+                selectedQuality.value = qualityOptions.value[0].value;
+                currentRow.value = row; // Store the current row
+                qualityDialogVisible.value = true;
+            }
+        } else {
+            // 抖音等其他平台直接下载
+            downloadMedia({
+                id: row.id
+            }).then(() => {
+                proxy.$modal.msgSuccess("下载任务已创建，请在下载管理中查看进度");
+            }).catch(error => {
+                proxy.$modal.msgError("下载失败: " + error.message);
+            });
+        }
+    }).catch(() => { });
+}
+
+// Define the confirmQualityDownload function properly in the component scope
+function confirmQualityDownload() {
+    if (!currentRow.value) return;
+    
+    qualityDialogLoading.value = true;
+    
+    downloadMedia({
+        id: currentRow.value.id,
+        qualityDesc: selectedQuality.value
+    }).then(() => {
+        proxy.$modal.msgSuccess("下载任务已创建，请在下载管理中查看进度");
+    }).catch(error => {
+        proxy.$modal.msgError("下载失败: " + error.message);
+    }).finally(() => {
+        qualityDialogLoading.value = false;
+        qualityDialogVisible.value = false;
+    });
 }
 
 getList();

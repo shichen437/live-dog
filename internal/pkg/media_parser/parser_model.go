@@ -8,6 +8,7 @@ var (
 type MediaInfo struct {
 	Platform       string `json:"platform"`
 	VideoID        string `json:"video_id"`
+	Refer          string `json:"refer"`
 	Author         string `json:"author"`
 	AuthorUid      string `json:"author_uid"`
 	Desc           string `json:"desc"`
@@ -19,9 +20,4 @@ type MediaInfo struct {
 	ImagesUrl      string `json:"images_url"`
 	ImagesCoverUrl string `json:"images_cover_url"`
 	VideoData      string `json:"video_data"`
-}
-
-type DownloadResult struct {
-	VideoID string
-	Video   []byte
 }

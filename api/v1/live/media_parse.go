@@ -44,3 +44,13 @@ type DeleteMediaParseReq struct {
 type DeleteMediaParseRes struct {
 	g.Meta `mime:"application/json"`
 }
+
+type GetDownloadMediaReq struct {
+	g.Meta      `path:"/media/parse/download" method:"get" tags:"媒体解析" summary:"下载解析"`
+	Id          int    `p:"id"  v:"required"`
+	QualityDesc string `p:"quality_desc"`
+}
+
+type GetDownloadMediaRes struct {
+	g.Meta `mime:"application/json"`
+}

@@ -31,3 +31,11 @@ export function delParseInfo(id) {
     method: 'delete'
   })
 }
+
+export function downloadMedia(data) {
+  return request({
+    url: '/media/parse/download',
+    method: 'get',
+    params: data
+  })
+}
