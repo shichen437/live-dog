@@ -7,7 +7,7 @@
 
 ## 简介
 
-Live Dog 是一个基于 GoFrame 和 RuoYi-Vue3 构建的直播录制工具（暂只支持抖音平台）。
+Live Dog 是一个基于 GoFrame 和 RuoYi-Vue3 构建的直播录制工具（暂只支持抖音/Bilibili平台）。
 
 *本项目仅用于学习交流，不涉及任何（包括存储、上传、爬取等）私人信息。*
 
