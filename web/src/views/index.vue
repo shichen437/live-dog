@@ -6,7 +6,7 @@
       </el-col>
     </el-row>
     <el-row :gutter="20">
-      <el-col :sm="24" :lg="12" class="left-column">
+      <el-col :sm="24" :lg="8" class="left-column">
         <h2>{{ appTitle }}</h2>
         <p></p>
         <p>
@@ -17,7 +17,7 @@
         </p>
       </el-col>
 
-      <el-col :sm="24" :lg="12" class="right-column">
+      <el-col :sm="24" :lg="8" class="right-column">
         <el-row>
           <el-col :span="12">
             <h2>技术选型</h2>
@@ -47,10 +47,19 @@
           </el-col>
         </el-row>
       </el-col>
+
+      <!-- 新增帮助文档列 -->
+      <el-col :sm="24" :lg="8" class="help-column">
+        <h2>帮助文档</h2>
+        <ul>
+          <li><a @click.prevent="openTab('docCookie')">Cookie获取</a></li>
+          <li><a @click.prevent="openTab('docMedia')">媒体解析说明</a></li>
+          <li><a @click.prevent="openTab('docSupport')">技术支持</a></li>
+        </ul>
+      </el-col>
     </el-row>
     <el-divider />
-  </div>
-  <div class="masonry-container">
+    <div class="masonry-container">
     <div class="masonry-layout">
       <div class="masonry-item" v-for="(card, index) in cards" :key="index">
         <el-card shadow="hover">
@@ -62,15 +71,23 @@
       </div>
     </div>
   </div>
+  </div>
+
 </template>
 
 <script setup name="Index">
+const router = useRouter();
+
 const appTitle = import.meta.env.VITE_APP_TITLE;
 const version = import.meta.env.VITE_APP_VERSION;
 
+function openTab(tabName) {
+  router.push({ name: tabName });
+}
+
 const cards = [
-  { title: '录制平台', items: ['抖音(cookie可选)'] },
-  { title: '媒体解析(需配置cookie)', items: ['web抖音分享链接(视频/图集)'] },
+  { title: '录制平台', items: ['抖音(cookie可选)', 'B站'] },
+  { title: '媒体解析(需配置cookie)', items: ['抖音web分享链接(视频/图集)','B站视频链接'] },
   { title: '定时任务', items: ['空间预警(需配置推送渠道)'] },
   { title: '推送渠道', items: ['邮箱', 'Gotify'] },
   { title: '其它', items: ['定时监控', '直播历史', '文件管理', 'Cookie管理'] },

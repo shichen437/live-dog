@@ -61,7 +61,32 @@ export const constantRoutes = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
-  }
+  },
+  {
+    path: '/docs',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'cookie',
+        component: () => import('@/views/docs/cookie'),
+        name: 'docCookie',
+        meta: { title: 'Cookie获取说明', icon: 'document' }
+      },
+      {
+        path: 'media',
+        component: () => import('@/views/docs/media'),
+        name: 'docMedia',
+        meta: { title: '媒体解析说明', icon: 'document' }
+      },
+      {
+        path: 'support',
+        component: () => import('@/views/docs/support'),
+        name: 'docSupport',
+        meta: { title: '技术支持', icon: 'document' }
+      }
+    ]
+  },
 ]
 
 // 动态路由，基于用户权限动态去加载
