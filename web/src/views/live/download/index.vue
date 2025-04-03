@@ -32,9 +32,23 @@
                         :indeterminate="isIndeterminate(scope.row.status)" />
                 </template>
             </el-table-column>
+            <el-table-column label="输出路径" align="center" width="200" :show-overflow-tooltip="true">
+                <template #default="scope">
+                    <span v-if="scope.row.status === 'completed' || scope.row.status === 'partSucceed'">
+                        {{ formatOutputPath(scope.row.output) }}
+                    </span>
+                    <span v-else>-</span>
+                </template>
+            </el-table-column>
             <el-table-column label="错误信息" align="center" prop="errorMsg" :show-overflow-tooltip="true" width="200" />
-            <el-table-column label="开始时间" align="center" prop="startTime" :show-overflow-tooltip="true" width="180" />
-            <el-table-column label="结束时间" align="center" prop="updateTime" :show-overflow-tooltip="true" width="180" />
+            <el-table-column label="耗时" align="center" width="100">
+                <template #default="scope">
+                    <span v-if="scope.row.status === 'completed' || scope.row.status === 'partSucceed'">
+                        {{ calculateDuration(scope.row.startTime, scope.row.updateTime) }}
+                    </span>
+                    <span v-else>-</span>
+                </template>
+            </el-table-column>
             <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
                 <template #default="scope">
                     <el-tooltip content="删除" placement="top">
@@ -51,7 +65,7 @@
     </div>
 </template>
 
-<script setup name="Live">
+<script setup name="Download">
 import {
     listDownload,
     delRecord,
@@ -70,20 +84,46 @@ const total = ref(0);
 const dateRange = ref([]);
 
 const data = reactive({
-    form: {},
     queryParams: {
         pageNum: 1,
         pageSize: 10,
-        anchor: undefined,
+        status: "",
     },
 });
 
 const { queryParams } = toRefs(data);
+let eventSource = null;
+
+onMounted(() => {
+    // 创建SSE连接
+    eventSource = new EventSource(`${import.meta.env.VITE_APP_BASE_API || ''}/sse`)
+
+    // 消息监听
+    eventSource.onmessage = (e) => {
+        try {
+            const data = JSON.parse(e.data)
+            if (data.event === 'download') {
+                getList();
+            }
+        } catch (err) {
+            console.error('SSE解析错误:', err)
+        }
+    }
+    eventSource.onerror = (e) => {
+        eventSource.close()
+    }
+})
+
+onBeforeUnmount(() => {
+    if (eventSource) {
+        eventSource.close()
+    }
+})
 
 /** 查询下载记录列表 */
 function getList() {
     loading.value = true;
-    listDownload(queryParams).then(
+    listDownload(queryParams.value).then(
         (response) => {
             recordList.value = response.data.rows;
             total.value = response.data.total;
@@ -120,9 +160,24 @@ function handleDelete(row) {
 
 /** 多选框选中数据 */
 function handleSelectionChange(selection) {
-    ids.value = selection.map((item) => item.roleId);
+    ids.value = selection.map((item) => item.id);
     single.value = selection.length != 1;
     multiple.value = !selection.length;
+}
+
+function calculateDuration(startTime, updateTime) {
+    if (!startTime || !updateTime) return '-';
+    const duration = new Date(updateTime) - new Date(startTime);
+    const seconds = Math.floor((duration / 1000) % 60);
+    const minutes = Math.floor((duration / (1000 * 60)) % 60);
+    const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+    if (hours === 0 && minutes === 0) {
+        return `${seconds}s`;
+    } else if (hours === 0) {
+        return `${minutes}m ${seconds}s`;
+    } else {
+        return `${hours}h ${minutes}m ${seconds}s`;
+    }
 }
 
 function getProgressPercentage(status) {
@@ -138,7 +193,7 @@ function getProgressPercentage(status) {
         case 'partSucceed':
             return 100;
         case 'error':
-            return 10;
+            return 100;
         default:
             return 5;
     }
@@ -160,6 +215,11 @@ function getProgressStatus(status) {
 
 function isIndeterminate(status) {
     return status === 'running' || status === 'converting';
+}
+
+function formatOutputPath(outputPath) {
+    if (!outputPath) return '-';
+    return outputPath.replace(/^\.\/resource\/file\//, '');
 }
 getList();
 </script>

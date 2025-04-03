@@ -71,6 +71,9 @@ onMounted(() => {
   eventSource.onmessage = (e) => {
     try {
       const data = JSON.parse(e.data)
+      if (data.event === 'download') {
+        return
+      }
       ElNotification({
         title: data.event === 'liveStart' ? '开播通知' :
           data.event === 'liveEnd' ? '下播通知' :

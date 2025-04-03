@@ -6,10 +6,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/shichen437/live-dog/internal/app/live/dao"
 	"github.com/shichen437/live-dog/internal/app/live/model/do"
+	"github.com/shichen437/live-dog/internal/pkg/sse"
 )
 
 var (
@@ -152,6 +155,7 @@ func updateRecord(dp *DownloadProgress) {
 		UpdateTime: dp.UpdateTime,
 		ErrorMsg:   dp.ErrorMsg,
 	})
+	broadcastProgress()
 }
 
 func newRecord(dp *DownloadProgress) {
@@ -163,4 +167,12 @@ func newRecord(dp *DownloadProgress) {
 		StartTime:  dp.StartTime,
 		UpdateTime: dp.UpdateTime,
 	})
+	broadcastProgress()
+}
+
+func broadcastProgress() {
+	msg := gjson.MustEncodeString(g.Map{
+		"event": "download",
+	})
+	sse.BroadcastMessage(msg)
 }
