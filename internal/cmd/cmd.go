@@ -163,5 +163,6 @@ func bindRoute(group *ghttp.RouterGroup) {
 		live.LiveHistory,
 		live.MediaParse,
 		live.MediaDownload,
+		live.AuthorManage,
 	)
 }

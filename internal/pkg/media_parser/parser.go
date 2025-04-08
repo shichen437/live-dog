@@ -16,6 +16,7 @@ var (
 
 type MeidaParser interface {
 	ParseURL(ctx context.Context) (*MediaInfo, error)
+	ParseUserInfo(ctx context.Context) (*UserInfo, error)
 }
 
 func Register(domain string, b MediaParserBuilder) {

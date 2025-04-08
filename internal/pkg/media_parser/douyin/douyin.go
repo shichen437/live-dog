@@ -12,6 +12,7 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shichen437/live-dog/internal/pkg/media_parser"
+	"github.com/shichen437/live-dog/internal/pkg/params"
 	"github.com/shichen437/live-dog/internal/pkg/utils"
 	"github.com/tidwall/gjson"
 )
@@ -62,6 +63,48 @@ func (d *DouyinParser) ParseURL(ctx context.Context) (*media_parser.MediaInfo, e
 		return videoInfo, nil
 	}
 	return nil, gerror.New("不支持的抖音链接")
+}
+
+func (d *DouyinParser) ParseUserInfo(ctx context.Context) (*media_parser.UserInfo, error) {
+	re := regexp.MustCompile(`user/([A-Za-z0-9_-]+)`)
+	match := re.FindStringSubmatch(d.Url)
+	if len(match) < 2 {
+		return nil, gerror.New("未能提取到用户ID")
+	}
+	userId := match[1]
+	// 获取用户信息
+	userInfo, err := getUserInfo(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	g.Log().Debug(ctx, "userInfo: ", userInfo)
+	return nil, nil
+}
+
+func getUserInfo(ctx context.Context, userId string) (*media_parser.UserInfo, error) {
+	c := g.Client()
+	c.SetHeaderMap(douyinHeaders)
+	cookieMap := utils.GetCookieMap(platform, domain)
+	cookieMap["odin_tt"] = params.GetOdintt()
+	cookieMap["ttwid"] = params.GetTtwid()
+	c.SetCookieMap(cookieMap)
+	payloadMap := params.GetProfileParamsMap(userId)
+	payload := params.ConvertParamsToQueryString(payloadMap)
+	a_bogus, err := params.GetABogus(payload, douyinHeaders["User-Agent"])
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return nil, err
+	}
+	payload = payload + "&a_bogus=" + a_bogus
+	resp, err := c.Get(ctx, userProfilePath+payload)
+	defer resp.Close()
+	if err != nil {
+		g.Log().Error(ctx, err)
+		return nil, gerror.New("请求用户信息失败")
+	}
+	body, err := utils.Text(resp.Response)
+	g.Log().Debug(ctx, "resp: ", body)
+	return nil, nil
 }
 
 func getVideoInfo(ctx context.Context, videoId string) (*media_parser.MediaInfo, error) {

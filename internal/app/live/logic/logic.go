@@ -5,6 +5,7 @@
 package logic
 
 import (
+	_ "github.com/shichen437/live-dog/internal/app/live/logic/author_manage"
 	_ "github.com/shichen437/live-dog/internal/app/live/logic/file_manage"
 	_ "github.com/shichen437/live-dog/internal/app/live/logic/live_cookie"
 	_ "github.com/shichen437/live-dog/internal/app/live/logic/live_history"

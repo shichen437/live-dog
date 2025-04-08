@@ -21,3 +21,16 @@ type MediaInfo struct {
 	ImagesCoverUrl string `json:"images_cover_url"`
 	VideoData      string `json:"video_data"`
 }
+
+type UserInfo struct {
+	UniqueId       string `json:"unique_id"`
+	Platform       string `json:"platform"`
+	Nickname       string `json:"nickname"`
+	Avatar         string `json:"avatar"`
+	Signature      string `json:"signature"`
+	IpLocation     string `json:"ip_location"`
+	FollowerCount  int    `json:"follower_count"`
+	FollowingCount int    `json:"following_count"`
+	Refer          string `json:"refer"`
+	CurrentDay     string `json:"current_day"`
+}
