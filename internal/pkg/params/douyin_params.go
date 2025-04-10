@@ -2,6 +2,7 @@ package params
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -152,10 +153,10 @@ func GetProfileParamsMap(uid string) map[string]string {
 	return paramsMap
 }
 
-func ConvertParamsToQueryString(params map[string]string) string {
+func ConvertParamsToQueryString(params map[string]interface{}) string {
 	queryString := ""
 	for key, value := range params {
-		queryString += key + "=" + value + "&"
+		queryString += key + "=" + fmt.Sprint(value) + "&"
 	}
 	return queryString[:len(queryString)-1]
 }

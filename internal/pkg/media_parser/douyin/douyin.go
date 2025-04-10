@@ -8,11 +8,13 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/launcher"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/shichen437/live-dog/internal/pkg/media_parser"
-	"github.com/shichen437/live-dog/internal/pkg/params"
 	"github.com/shichen437/live-dog/internal/pkg/utils"
 	"github.com/tidwall/gjson"
 )
@@ -35,15 +37,10 @@ func init() {
 
 func (d *DouyinParser) ParseURL(ctx context.Context) (*media_parser.MediaInfo, error) {
 	// 提取网址
-	c := g.Client()
-	c.SetHeaderMap(douyinHeaders)
-	c.SetCookieMap(d.assembleCookieMap())
-	resp, err := c.Get(ctx, d.Url)
-	if err != nil {
-		g.Log().Error(ctx, err)
-		return nil, gerror.New("请求链接失败, 请检查 Cookie 设置")
+	mediaUrl := d.getMediaUrl(ctx)
+	if mediaUrl == "" {
+		return nil, gerror.New("请求链接失败, 请检查链接或Cookie")
 	}
-	mediaUrl := resp.Response.Request.URL.String()
 	// 视频
 	if strings.Contains(mediaUrl, "/video/") {
 		videoId := strings.TrimPrefix(utils.FindFirstMatch(mediaUrl, `video/(\d+)?`), "video/")
@@ -62,49 +59,79 @@ func (d *DouyinParser) ParseURL(ctx context.Context) (*media_parser.MediaInfo, e
 		}
 		return videoInfo, nil
 	}
+	// 主页
+	if strings.Contains(mediaUrl, "/user/") {
+		return nil, gerror.New("请跳转博主管理页面")
+	}
 	return nil, gerror.New("不支持的抖音链接")
 }
 
 func (d *DouyinParser) ParseUserInfo(ctx context.Context) (*media_parser.UserInfo, error) {
-	re := regexp.MustCompile(`user/([A-Za-z0-9_-]+)`)
-	match := re.FindStringSubmatch(d.Url)
-	if len(match) < 2 {
-		return nil, gerror.New("未能提取到用户ID")
+	if !strings.Contains(d.Url, "/user/") ||
+		!strings.Contains(d.getMediaUrl(ctx), "/user/") {
+		return nil, gerror.New("不支持的抖音链接")
 	}
-	userId := match[1]
-	// 获取用户信息
-	userInfo, err := getUserInfo(ctx, userId)
+	userInfo, err := getUserInfo(d.Url)
 	if err != nil {
 		return nil, err
 	}
-	g.Log().Debug(ctx, "userInfo: ", userInfo)
-	return nil, nil
+	return userInfo, nil
 }
 
-func getUserInfo(ctx context.Context, userId string) (*media_parser.UserInfo, error) {
+func (d *DouyinParser) getMediaUrl(ctx context.Context) string {
 	c := g.Client()
 	c.SetHeaderMap(douyinHeaders)
-	cookieMap := utils.GetCookieMap(platform, domain)
-	cookieMap["odin_tt"] = params.GetOdintt()
-	cookieMap["ttwid"] = params.GetTtwid()
-	c.SetCookieMap(cookieMap)
-	payloadMap := params.GetProfileParamsMap(userId)
-	payload := params.ConvertParamsToQueryString(payloadMap)
-	a_bogus, err := params.GetABogus(payload, douyinHeaders["User-Agent"])
+	c.SetCookieMap(d.assembleCookieMap())
+	resp, err := c.Get(ctx, d.Url)
 	if err != nil {
 		g.Log().Error(ctx, err)
-		return nil, err
+		return ""
 	}
-	payload = payload + "&a_bogus=" + a_bogus
-	resp, err := c.Get(ctx, userProfilePath+payload)
-	defer resp.Close()
-	if err != nil {
-		g.Log().Error(ctx, err)
-		return nil, gerror.New("请求用户信息失败")
-	}
-	body, err := utils.Text(resp.Response)
-	g.Log().Debug(ctx, "resp: ", body)
-	return nil, nil
+	mediaUrl := resp.Response.Request.URL.String()
+	d.Url = mediaUrl
+	return mediaUrl
+}
+
+func getUserInfo(url string) (*media_parser.UserInfo, error) {
+	var userInfo *media_parser.UserInfo
+	var err error
+
+	u := launcher.New().MustLaunch()
+	browser := rod.New().ControlURL(u).MustConnect()
+	router := browser.HijackRequests()
+
+	router.MustAdd("*/user/profile/other/*", func(hj *rod.Hijack) {
+		hj.MustLoadResponse()
+		body := hj.Response.Payload().Body
+		jsonData := gjson.ParseBytes(body)
+		if !jsonData.Exists() {
+			err = gerror.New("未能获取到用户信息")
+			return
+		}
+		var avatar string
+		if jsonData.Get("user.avatar_medium.url_list").Exists() {
+			arr := jsonData.Get("user.avatar_medium.url_list").Array()
+			avatar = arr[0].String()
+		}
+		userInfo = &media_parser.UserInfo{
+			UniqueId:       jsonData.Get("user.sec_uid").String(),
+			Platform:       platform,
+			Nickname:       jsonData.Get("user.nickname").String(),
+			Avatar:         avatar,
+			Signature:      jsonData.Get("user.signature").String(),
+			IpLocation:     jsonData.Get("user.ip_location").String(),
+			FollowerCount:  int(jsonData.Get("user.follower_count").Int()),
+			FollowingCount: int(jsonData.Get("user.following_count").Int()),
+			Refer:          url,
+		}
+	})
+
+	go router.Run()
+
+	page := browser.MustPage(url)
+	page.MustWaitLoad()
+	time.Sleep(time.Second * 5)
+	return userInfo, err
 }
 
 func getVideoInfo(ctx context.Context, videoId string) (*media_parser.MediaInfo, error) {

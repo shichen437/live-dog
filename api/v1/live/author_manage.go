@@ -25,6 +25,7 @@ type GetAuthorInfoReq struct {
 
 type GetAuthorInfoRes struct {
 	g.Meta `mime:"application/json"`
+	*entity.AuthorInfo
 }
 
 type PostAuthorInfoReq struct {
@@ -45,10 +46,14 @@ type DeleteAuthorInfoRes struct {
 }
 
 type GetAuthorTrendReq struct {
-	g.Meta `path:"/author/manage/trend/{id}" method:"get" tags:"博主信息" summary:"博主粉丝数据"`
-	Id     int `p:"id"`
+	g.Meta `path:"/author/manage/trend" method:"get" tags:"博主信息" summary:"博主粉丝数据"`
+	Id     int  `p:"id"`
+	Range  *int `p:"range"`
 }
 
 type GetAuthorTrendRes struct {
 	g.Meta `mime:"application/json"`
+	Days   []string `json:"days"`
+	Counts []int64  `json:"counts"`
+	Nums   []int    `json:"nums"`
 }

@@ -84,7 +84,10 @@ func (b *BilibiliParser) ParseUserInfo(ctx context.Context) (*media_parser.UserI
 		g.Log().Error(ctx, err)
 		return nil, gerror.New("获取access_id失败")
 	}
-	reqUrl, err := b.signWbiParams(ctx, uid, accessId)
+	reqUrl, err := params.WbiSignURL(userProfileInfoUrl, g.MapStrStr{
+		"mid":     uid,
+		"w_webid": accessId,
+	})
 	if err != nil || reqUrl == "" {
 		g.Log().Error(ctx, err)
 		return nil, gerror.New("获取用户信息失败")
@@ -309,11 +312,4 @@ func (b *BilibiliParser) getAccessId(ctx context.Context) (string, error) {
 		return "", gerror.New("failed to find access_id")
 	}
 	return renderData["access_id"], nil
-}
-
-func (b *BilibiliParser) signWbiParams(ctx context.Context, uid, accessId string) (string, error) {
-	return params.WbiSignURL(userProfileInfoUrl, g.MapStrStr{
-		"mid":     uid,
-		"w_webid": accessId,
-	})
 }

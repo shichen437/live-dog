@@ -8,7 +8,7 @@
     <div class="right-menu">
       <template v-if="appStore.device !== 'mobile'">
         <header-search id="header-search" class="right-menu-item" />
-        
+
         <el-tooltip content="源码地址" effect="light" placement="bottom">
           <Git id="source-git" class="right-menu-item hover-effect" />
         </el-tooltip>
@@ -62,9 +62,16 @@ const userStore = useUserStore()
 const settingsStore = useSettingsStore()
 
 let eventSource = null;
+let reconnectTimeout = null;
+const MAX_RECONNECT_ATTEMPTS = 5;
+let reconnectAttempts = 0;
 
-onMounted(() => {
-  // 创建SSE连接
+function createSSEConnection() {
+  // 清除之前的连接
+  if (eventSource) {
+    eventSource.close();
+  }
+
   eventSource = new EventSource(`${import.meta.env.VITE_APP_BASE_API || ''}/sse`)
 
   // 消息监听
@@ -87,16 +94,45 @@ onMounted(() => {
     }
   }
 
+  // 连接成功时重置重连计数
+  eventSource.onopen = () => {
+    reconnectAttempts = 0;
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = null;
+    }
+  }
+
   // 错误处理
   eventSource.onerror = (e) => {
     console.error('SSE连接异常:', e)
     eventSource.close()
+
+    // 尝试重连
+    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      reconnectAttempts++;
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // 指数退避策略，最大30秒
+      console.log(`SSE连接断开，${delay / 1000}秒后尝试第${reconnectAttempts}次重连...`);
+
+      reconnectTimeout = setTimeout(() => {
+        createSSEConnection();
+      }, delay);
+    } else {
+      console.error(`SSE连接失败，已达到最大重试次数(${MAX_RECONNECT_ATTEMPTS})`);
+    }
   }
+}
+
+onMounted(() => {
+  createSSEConnection();
 })
 
 onBeforeUnmount(() => {
   if (eventSource) {
     eventSource.close()
+  }
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout)
   }
 })
 

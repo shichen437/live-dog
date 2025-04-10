@@ -25,17 +25,17 @@ export function addAuthor(data) {
   })
 }
 
-export function delAuthor(data) {
+export function delAuthor(id) {
   return request({
-    url: '/author/manage',
+    url: '/author/manage/' + id,
     method: 'delete',
-    data: data
   })
 }
 
-export function getTrend(id) {
+export function getTrend(query) {
   return request({
-    url: '/author/manage/trend/' + id,
-    method: 'get'
+    url: '/author/manage/trend',
+    method: 'get',
+    params: query
   })
 }
