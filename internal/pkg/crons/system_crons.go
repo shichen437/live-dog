@@ -22,6 +22,11 @@ func AddSystemJob(jobId int64) {
 			g.Log().Info(gctx.New(), "添加系统定时任务-", result.JobName)
 			system.StorageWarning(result.JobId, result.JobParams, result.JobName)
 		}, "Cron-System-Job-"+strconv.Itoa(int(jobId)))
+	case "followerTrend":
+		gcron.Add(strings.Trim(result.CronExpression, " "), func() {
+			g.Log().Info(gctx.New(), "添加系统定时任务-", result.JobName)
+			system.FollowerTrend(result.JobId, result.JobName)
+		}, "Cron-System-Job-"+strconv.Itoa(int(jobId)))
 	default:
 	}
 

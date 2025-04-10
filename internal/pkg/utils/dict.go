@@ -22,6 +22,7 @@ func init() {
 	})
 	addDictData(JobInvoke, []SystemDictData{
 		{DictType: JobInvoke, DictLabel: "空间预警", DictValue: "storageWarning", DictSort: 1},
+		{DictType: JobInvoke, DictLabel: "粉丝趋势", DictValue: "followerTrend", DictSort: 2},
 	})
 }
 

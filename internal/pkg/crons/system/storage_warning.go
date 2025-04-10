@@ -51,7 +51,7 @@ func StorageWarning(jobId int64, params, jobName string) {
 		JobId:         jobId,
 		JobName:       jobName,
 		InvokeTarget:  invokeTarget,
-		JobMessage:    title,
+		JobMessage:    "执行成功",
 		Status:        "0",
 		ExceptionInfo: "",
 	})
