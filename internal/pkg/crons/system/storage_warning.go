@@ -2,6 +2,7 @@ package system
 
 import (
 	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/shichen437/live-dog/internal/app/monitor/model/entity"
@@ -41,10 +42,13 @@ func StorageWarning(jobId int64, params, jobName string) {
 		}
 	}
 	if diskInfo.UsedPercent > threshold {
-		mp.CustomPush(gctx.New(), &mp.MessageModel{
+		err := mp.CustomPush(gctx.New(), &mp.MessageModel{
 			Title:   title,
 			Content: "存储空间已达到" + gconv.String(threshold) + "%",
 		})
+		if err != nil {
+			g.Log().Error(gctx.New(), "空间预警发送邮件失败：", err)
+		}
 	}
 	// 任务日志
 	service.SysJob().AddLog(gctx.New(), &entity.SysJobLog{

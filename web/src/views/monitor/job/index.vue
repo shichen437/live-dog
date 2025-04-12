@@ -250,7 +250,7 @@
                     trigger="hover"
                   >
                     <div slot="content">
-                      参数示例: {"threshold": "90"}<br />
+                      参数示例: {"threshold": 90}<br />
                       参数说明:<br />
                       threshold: 空间预警阈值<br />
                     </div>

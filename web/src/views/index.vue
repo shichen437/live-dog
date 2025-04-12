@@ -31,6 +31,7 @@
               <li>goframe v2</li>
               <li>mysql</li>
               <li>golang-migrate</li>
+              <li>go-rod</li>
               <li>...</li>
             </ul>
           </el-col>
@@ -54,6 +55,7 @@
         <ul>
           <li><a @click.prevent="openTab('docCookie')">Cookie获取</a></li>
           <li><a @click.prevent="openTab('docMedia')">媒体解析说明</a></li>
+          <li><a @click.prevent="openTab('docJob')">定时任务说明</a></li>
           <li><a @click.prevent="openTab('docSupport')">技术支持</a></li>
         </ul>
       </el-col>
@@ -88,8 +90,9 @@ function openTab(tabName) {
 const cards = [
   { title: '录制平台', items: ['抖音(cookie可选)', 'B站'] },
   { title: '媒体解析(需配置cookie)', items: ['抖音web分享链接(视频/图集)','B站视频链接'] },
-  { title: '定时任务', items: ['空间预警(需配置推送渠道)'] },
+  { title: '定时任务', items: ['空间预警(需配置推送渠道)', '粉丝趋势'] },
   { title: '推送渠道', items: ['邮箱', 'Gotify'] },
+  { title: '博主管理', items: ['抖音(web主页链接)', 'B站(web主页链接)'] },
   { title: '其它', items: ['定时监控', '直播历史', '文件管理', 'Cookie管理'] },
 ];
 

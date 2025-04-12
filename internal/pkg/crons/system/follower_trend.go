@@ -60,6 +60,7 @@ func FollowerTrend(jobId int64, jobName string) {
 			Info:        info,
 		})
 		updateAuthorInfo(ctx, info, author.Id)
+		time.Sleep(time.Duration(rand.Intn(2000)+1000) * time.Millisecond)
 	}
 	service.SysJob().AddLog(gctx.New(), &mEntity.SysJobLog{
 		JobId:         jobId,

@@ -84,6 +84,12 @@ export const constantRoutes = [
         component: () => import('@/views/docs/support'),
         name: 'docSupport',
         meta: { title: '技术支持', icon: 'document' }
+      },
+      {
+        path: 'job',
+        component: () => import('@/views/docs/job'),
+        name: 'docJob',
+        meta: { title: '定时任务说明', icon: 'document' }
       }
     ]
   },

@@ -3,7 +3,10 @@
   <h1 align="center">Live Dog</h1>
 </p>
 
-简体中文 ｜ [English](./README_EN.md)
+<p align="center">
+简体中文 ｜ <a href="./README_EN.md">English</a>
+</p>
+<a href="./CHANGELOG.md">版本日志</a>
 
 ## 简介
 
@@ -11,7 +14,18 @@ Live Dog 是一个基于 GoFrame 和 RuoYi-Vue3 构建的直播录制工具（�
 
 *本项目仅用于学习交流，不涉及任何（包括存储、上传、爬取等）私人信息。*
 
-<img src="./resource/assets/screenshots/index/index.jpg" />
+<img src="./resource/assets/screenshots/index.jpg" />
+<table>
+  <tr>
+    <table border="0" cellspacing="0" cellpadding="0">
+      <tr>
+        <td><img src="./resource/assets/screenshots/followerTrend.jpg" width="100%" /></td>
+        <td><img src="./resource/assets/screenshots/roomAdd.jpg" width="100%" /></td>
+        <td><img src="./resource/assets/screenshots/mediaParse.jpg" width="100%" /></td>
+      </tr>
+    </table>
+  </tr>
+</table>
 
 ## 架构
 
@@ -148,6 +162,12 @@ Live Dog 是一个基于 GoFrame 和 RuoYi-Vue3 构建的直播录制工具（�
       <td>✅</td>
       <td>推荐使用直播间 URL</td>
     </tr>
+    <tr align="center">
+      <td>Bilibili</td>
+      <td>https://live.bilibili.com/12345678</td>
+      <td>✅</td>
+      <td>推荐使用直播间 URL</td>
+    </tr>
   </table>
 
 ## License
@@ -158,4 +178,5 @@ Live Dog 是一个基于 GoFrame 和 RuoYi-Vue3 构建的直播录制工具（�
 
 - gf框架 <https://github.com/gogf/gf>
 - golang-migrate <https://github.com/golang-migrate/migrate>
+- go-rod <https://github.com/go-rod/rod>
 - RuoYi-Vue3 <https://gitee.com/y_project/RuoYi-Vue>

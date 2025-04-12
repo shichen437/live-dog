@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/launcher"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/shichen437/live-dog/internal/pkg/media_parser"
 	"github.com/shichen437/live-dog/internal/pkg/utils"
 	"github.com/tidwall/gjson"
@@ -95,9 +95,12 @@ func (d *DouyinParser) getMediaUrl(ctx context.Context) string {
 func getUserInfo(url string) (*media_parser.UserInfo, error) {
 	var userInfo *media_parser.UserInfo
 	var err error
-
-	u := launcher.New().MustLaunch()
-	browser := rod.New().ControlURL(u).MustConnect()
+	currentDay := gtime.Now().Format("Y-m-d")
+	browser, error := utils.GetBrowser()
+	if error != nil {
+		return nil, error
+	}
+	defer utils.ReturnBrowser(browser)
 	router := browser.HijackRequests()
 
 	router.MustAdd("*/user/profile/other/*", func(hj *rod.Hijack) {
@@ -118,20 +121,40 @@ func getUserInfo(url string) (*media_parser.UserInfo, error) {
 			Platform:       platform,
 			Nickname:       jsonData.Get("user.nickname").String(),
 			Avatar:         avatar,
-			Signature:      jsonData.Get("user.signature").String(),
-			IpLocation:     jsonData.Get("user.ip_location").String(),
 			FollowerCount:  int(jsonData.Get("user.follower_count").Int()),
 			FollowingCount: int(jsonData.Get("user.following_count").Int()),
 			Refer:          url,
+			Signature:      jsonData.Get("user.signature").String(),
+			IpLocation:     jsonData.Get("user.ip_location").String(),
+			CurrentDay:     currentDay,
 		}
 	})
 
 	go router.Run()
 
-	page := browser.MustPage(url)
-	page.MustWaitLoad()
-	time.Sleep(time.Second * 5)
-	return userInfo, err
+	page := browser.MustPage(url).MustWaitLoad()
+	defer page.Close()
+	defer router.Stop()
+	timeout := time.After(8 * time.Second)
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-timeout:
+			if userInfo == nil {
+				return nil, gerror.New("获取用户信息超时")
+			}
+			return userInfo, err
+		case <-ticker.C:
+			if userInfo != nil && userInfo.Refer != "" {
+				return userInfo, nil
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 }
 
 func getVideoInfo(ctx context.Context, videoId string) (*media_parser.MediaInfo, error) {

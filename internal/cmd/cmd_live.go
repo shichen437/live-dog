@@ -72,6 +72,7 @@ func LiveMonitor() error {
 
 func shutdown(sig os.Signal) {
 	g.Log().Info(gctx.GetInitCtx(), "live monitor shutdown!")
+	utils.CleanBrowserPool()
 	global := utils.GetGlobal(gctx.GetInitCtx())
 	global.ListenerManager.Close(gctx.GetInitCtx())
 	global.RecorderManager.Close(gctx.GetInitCtx())

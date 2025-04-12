@@ -1,10 +1,10 @@
-FROM --platform=linux/amd64 alpine
+FROM --platform=linux/amd64 zenika/alpine-chrome:with-chromedriver
 ###############################################################################
 #                                LiveDog-build
 ###############################################################################
 
 LABEL maintainer="shichen437 <shichen437@126.com>"
-LABEL version="0.0.7"
+LABEL version="0.0.8"
 LABEL description="LiveDog 监控平台"
 LABEL license="MIT"
 LABEL source="https://github.com/shichen437/live-dog"
@@ -13,6 +13,8 @@ ENV WORKDIR=/LiveDog
 ENV TZ=Asia/Shanghai
 ENV PROJECT_UPLOAD=$WORKDIR/upload \
     PROJECT_OUTPUT=$WORKDIR/video
+
+USER root
 
 RUN mkdir -p $PROJECT_OUTPUT && \
     mkdir -p $PROJECT_UPLOAD && \

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	v1 "github.com/shichen437/live-dog/api/v1/live"
 	"github.com/shichen437/live-dog/internal/app/common/consts"
@@ -29,6 +30,9 @@ type sAuthorManage struct {
 func (s *sAuthorManage) List(ctx context.Context, req *v1.GetAuthorInfoListReq) (res *v1.GetAuthorInfoListRes, err error) {
 	res = &v1.GetAuthorInfoListRes{}
 	m := dao.AuthorInfo.Ctx(ctx)
+	if req.Nickname != "" {
+		m = m.WhereLike(dao.AuthorInfo.Columns().Nickname, "%"+req.Nickname+"%")
+	}
 	m = m.OrderDesc(dao.AuthorInfo.Columns().Id)
 	res.Total, err = m.Count()
 	err = m.Page(req.PageNum, req.PageSize).Scan(&res.Rows)
@@ -59,7 +63,8 @@ func (s *sAuthorManage) New(ctx context.Context, req *v1.PostAuthorInfoReq) (res
 	}
 	info, err := parser.ParseUserInfo(ctx)
 	if err != nil || info == nil || info.UniqueId == "" {
-		return nil, gerror.New("获取博主信息失败")
+		g.Log().Error(ctx, err)
+		return nil, gerror.New("解析博主信息失败")
 	}
 	// 检查是否已经存在
 	authorInfo, err := dao.AuthorInfo.Ctx(ctx).

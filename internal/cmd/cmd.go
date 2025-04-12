@@ -70,6 +70,7 @@ var (
 			})
 			LiveMonitor()
 			JobInit()
+			InitBrowserPool()
 			// Just run the server.
 			s.Run()
 			return nil
