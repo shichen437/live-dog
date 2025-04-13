@@ -9,6 +9,7 @@ import (
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/shichen437/live-dog/internal/app/live/dao"
+	"github.com/shichen437/live-dog/internal/app/live/model/do"
 	"github.com/shichen437/live-dog/internal/app/live/model/entity"
 	mEntity "github.com/shichen437/live-dog/internal/app/monitor/model/entity"
 	"github.com/shichen437/live-dog/internal/app/monitor/service"
@@ -119,23 +120,23 @@ func addOrUpdateAuthorInfoHistory(ctx context.Context, model *updateHistoryModel
 			AuthorId:           model.AuthorInfo.Id,
 			Day:                model.CurrentDay,
 			Num:                num,
-			LastFollowerCount:  model.AuthorInfo.FollowerCount,
-			LastFollowingCount: model.AuthorInfo.FollowingCount,
+			LastFollowerCount:  int64(model.Info.FollowerCount),
+			LastFollowingCount: model.Info.FollowingCount,
 			CreateTime:         gtime.Now(),
 		})
 	} else {
 		// 更新
-		dao.AuthorInfoHistory.Ctx(ctx).WherePri(currentHistory.Id).Update(entity.AuthorInfoHistory{
+		dao.AuthorInfoHistory.Ctx(ctx).WherePri(currentHistory.Id).Update(do.AuthorInfoHistory{
 			Num:                num,
-			LastFollowerCount:  model.AuthorInfo.FollowerCount,
-			LastFollowingCount: model.AuthorInfo.FollowingCount,
+			LastFollowerCount:  int64(model.Info.FollowerCount),
+			LastFollowingCount: model.Info.FollowingCount,
 			UpdateTime:         gtime.Now(),
 		})
 	}
 }
 
 func updateAuthorInfo(ctx context.Context, info *media_parser.UserInfo, authorId int) {
-	dao.AuthorInfo.Ctx(ctx).WherePri(authorId).Update(entity.AuthorInfo{
+	dao.AuthorInfo.Ctx(ctx).Where(dao.AuthorInfo.Columns().Id, authorId).Update(do.AuthorInfo{
 		Nickname:       info.Nickname,
 		AvatarUrl:      info.Avatar,
 		Signature:      info.Signature,

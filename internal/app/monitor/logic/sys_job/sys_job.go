@@ -187,7 +187,14 @@ func (s *sSysJob) RunJob(ctx context.Context, req *v1.PutJobRunReq) (result *v1.
 	if err != nil || r == nil {
 		return
 	}
-	system.StorageWarning(r.JobId, r.JobParams, r.JobName)
+	switch r.InvokeTarget {
+	case "storageWarning":
+		go system.StorageWarning(r.JobId, r.JobParams, r.JobName)
+	case "followerTrend":
+		go system.FollowerTrend(r.JobId, r.JobName)
+	default:
+		return
+	}
 	return
 }
 
