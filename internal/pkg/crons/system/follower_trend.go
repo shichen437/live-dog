@@ -89,11 +89,14 @@ func getAuthorInfoHistory(ctx context.Context, authorId int64, day string) (hist
 		Where(dao.AuthorInfoHistory.Columns().AuthorId, authorId).
 		Where(dao.AuthorInfoHistory.Columns().Day, day).
 		One()
+	history = &entity.AuthorInfoHistory{}
 	if err != nil {
 		return nil, err
 	}
 	if result != nil {
-		result.Struct(history)
+		if err = result.Struct(&history); err != nil {
+			return nil, err
+		}
 		return history, nil
 	}
 	return nil, nil
@@ -126,12 +129,15 @@ func addOrUpdateAuthorInfoHistory(ctx context.Context, model *updateHistoryModel
 		})
 	} else {
 		// 更新
-		dao.AuthorInfoHistory.Ctx(ctx).WherePri(currentHistory.Id).Update(do.AuthorInfoHistory{
-			Num:                num,
-			LastFollowerCount:  int64(model.Info.FollowerCount),
-			LastFollowingCount: model.Info.FollowingCount,
-			UpdateTime:         gtime.Now(),
-		})
+		dao.AuthorInfoHistory.Ctx(ctx).
+			Data(do.AuthorInfoHistory{
+				Num:                num,
+				LastFollowerCount:  int64(model.Info.FollowerCount),
+				LastFollowingCount: model.Info.FollowingCount,
+				UpdateTime:         gtime.Now(),
+			}).
+			Where(dao.AuthorInfoHistory.Columns().Id, currentHistory.Id).
+			Update()
 	}
 }
 
