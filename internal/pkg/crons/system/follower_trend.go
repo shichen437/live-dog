@@ -49,8 +49,21 @@ func FollowerTrend(jobId int64, jobName string) {
 			continue
 		}
 		time.Sleep(time.Duration(rand.Intn(2000)+1000) * time.Millisecond)
-		info, err := parser.ParseUserInfo(ctx)
-		if err != nil || info == nil || info.UniqueId != author.UniqueId {
+		var info *media_parser.UserInfo
+		var parseErr error
+		maxRetries := 3
+
+		for i := 0; i < maxRetries; i++ {
+			info, parseErr = parser.ParseUserInfo(ctx)
+			if parseErr == nil && info != nil && info.UniqueId == author.UniqueId {
+				break
+			}
+			if i < maxRetries-1 {
+				time.Sleep(time.Duration(rand.Intn(2000)+1000) * time.Millisecond)
+			}
+		}
+
+		if parseErr != nil || info == nil || info.UniqueId != author.UniqueId {
 			g.Log().Error(ctx, "[定时任务]获取博主信息失败", err)
 			continue
 		}

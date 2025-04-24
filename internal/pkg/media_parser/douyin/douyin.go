@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/proto"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -102,6 +103,8 @@ func getUserInfo(url string) (*media_parser.UserInfo, error) {
 	}
 	defer utils.ReturnBrowser(browser)
 	router := browser.HijackRequests()
+
+	commonIntercept(router)
 
 	router.MustAdd("*/user/profile/other/*", func(hj *rod.Hijack) {
 		hj.MustLoadResponse()
@@ -225,4 +228,31 @@ func (d *DouyinParser) assembleCookieMap() map[string]string {
 		cookieMap[c.Name] = c.Value
 	}
 	return cookieMap
+}
+
+func commonIntercept(router *rod.HijackRouter) {
+	router.MustAdd("*.css", func(ctx *rod.Hijack) {
+		if ctx.Request.Type() == proto.NetworkResourceTypeStylesheet {
+			ctx.Response.Fail(proto.NetworkErrorReasonBlockedByClient)
+			return
+		}
+		ctx.ContinueRequest(&proto.FetchContinueRequest{})
+	})
+
+	router.MustAdd("*.jpeg", func(ctx *rod.Hijack) {
+		if ctx.Request.Type() == proto.NetworkResourceTypeImage {
+			ctx.Response.Fail(proto.NetworkErrorReasonBlockedByClient)
+			return
+		}
+		ctx.ContinueRequest(&proto.FetchContinueRequest{})
+	})
+
+	router.MustAdd("*/palyer-*", func(ctx *rod.Hijack) {
+		if ctx.Request.Type() == proto.NetworkResourceTypeScript {
+			ctx.Response.Fail(proto.NetworkErrorReasonBlockedByClient)
+			return
+		}
+		ctx.ContinueRequest(&proto.FetchContinueRequest{})
+	})
+
 }
