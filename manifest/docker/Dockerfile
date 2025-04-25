@@ -4,7 +4,7 @@ FROM --platform=linux/amd64 zenika/alpine-chrome:with-chromedriver
 ###############################################################################
 
 LABEL maintainer="shichen437 <shichen437@126.com>"
-LABEL version="0.0.8"
+LABEL version="0.0.9"
 LABEL description="LiveDog 监控平台"
 LABEL license="MIT"
 LABEL source="https://github.com/shichen437/live-dog"

@@ -46,6 +46,7 @@ func InitBrowserPool(poolNum int) {
 			g.Log().Error(gctx.New(), "创建浏览器失败", err)
 			return nil
 		}
+		b.MustPage("https://www.baidu.com")
 		return b
 	}
 	var wg sync.WaitGroup

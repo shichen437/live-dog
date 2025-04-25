@@ -48,7 +48,6 @@ func FollowerTrend(jobId int64, jobName string) {
 		if err != nil {
 			continue
 		}
-		time.Sleep(time.Duration(rand.Intn(2000)+1000) * time.Millisecond)
 		var info *media_parser.UserInfo
 		var parseErr error
 		maxRetries := 3
