@@ -1,10 +1,7 @@
-FROM --platform=linux/amd64 zenika/alpine-chrome:with-chromedriver
-###############################################################################
-#                                LiveDog-build
-###############################################################################
+FROM --platform=linux/amd64 ubuntu:20.04
 
 LABEL maintainer="shichen437 <shichen437@126.com>"
-LABEL version="0.0.9"
+LABEL version="centos"
 LABEL description="LiveDog 监控平台"
 LABEL license="MIT"
 LABEL source="https://github.com/shichen437/live-dog"
@@ -16,11 +13,18 @@ ENV PROJECT_UPLOAD=$WORKDIR/upload \
 
 USER root
 
-RUN mkdir -p $PROJECT_OUTPUT && \
-    mkdir -p $PROJECT_UPLOAD && \
-    apk --no-cache add nginx ffmpeg libc6-compat tzdata coreutils && \
+# Set non-interactive mode for apt-get
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y wget gnupg2 nginx && \
+    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable ffmpeg tzdata && \
     ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone
+    echo $TZ > /etc/timezone && \
+    useradd -r -d /var/cache/nginx -s /sbin/nologin nginx
 
 ADD web/nginx.conf /etc/nginx/nginx.conf
 
